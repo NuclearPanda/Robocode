@@ -17,14 +17,14 @@ public class Helper {
         double factor = Utils.normalRelativeAngle(offsetAngle)
                 / maxEscapeAngle(ew.bulletVelocity) * ew.direction;
 
-        return (int)limit(0,
+        return (int) limit(0,
                 (factor * ((BINS - 1) / 2)) + ((BINS - 1) / 2),
                 BINS - 1);
     }
 
     public static double wallSmoothing(Point2D.Double botLocation, double angle, int orientation) {
         while (!_fieldRect.contains(project(botLocation, angle, WALL_STICK))) {
-            angle += orientation*0.05;
+            angle += orientation * 0.05;
         }
         return angle;
     }
@@ -44,17 +44,34 @@ public class Helper {
     }
 
     public static double bulletVelocity(double power) {
-        return (20.0 - (3.0*power));
+        return (20.0 - (3.0 * power));
+    }
+
+    public static double bulletPower(double velocity) {
+        return (20.0 - velocity) / 3.0;
+    }
+
+    public static double convertBearing(double bearing) {
+        return bearing;
+    }
+
+    public static double getBearing(Vector2D vector) {
+        return convertBearing(Math.atan2(vector.getY(), vector.getX()));
+    }
+
+    public static Vector2D getVector(double bearing, double length) {
+        bearing = convertBearing(bearing);
+        return new Vector2D(Math.cos(bearing) * length, Math.sin(bearing) * length);
     }
 
     public static double maxEscapeAngle(double velocity) {
-        return Math.asin(8.0/velocity);
+        return Math.asin(8.0 / velocity);
     }
 
     public static void setBackAsFront(AdvancedRobot robot, double goAngle) {
         double angle =
                 Utils.normalRelativeAngle(goAngle - robot.getHeadingRadians());
-        if (Math.abs(angle) > (Math.PI/2)) {
+        if (Math.abs(angle) > (Math.PI / 2)) {
             if (angle < 0) {
                 robot.setTurnRightRadians(Math.PI + angle);
             } else {
@@ -63,7 +80,7 @@ public class Helper {
             robot.setBack(100);
         } else {
             if (angle < 0) {
-                robot.setTurnLeftRadians(-1*angle);
+                robot.setTurnLeftRadians(-1 * angle);
             } else {
                 robot.setTurnRightRadians(angle);
             }

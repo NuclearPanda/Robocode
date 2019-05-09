@@ -1,9 +1,9 @@
 package hjh;
+
+import hjh.gun.GunControllerSelector;
+import hjh.gun.TargetingData;
 import hjh.movement.EnemyWave;
-import robocode.AdvancedRobot;
-import robocode.HitByBulletEvent;
-import robocode.HitWallEvent;
-import robocode.ScannedRobotEvent;
+import robocode.*;
 import robocode.util.Utils;
 
 import java.awt.geom.Point2D;
@@ -11,27 +11,30 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 import static hjh.util.Helper.*;
-//import java.awt.Color;
 
 // API help : https://robocode.sourceforge.io/docs/robocode/robocode/Robot.html
 
 /**
  * Greez - a robot by hjh
  */
-public class Greez extends AdvancedRobot
-{
+public class Greez extends AdvancedRobot {
     public static int BINS = 47;
     public static double _surfStats[] = new double[BINS];
     public Point2D.Double _myLocation;     // our bot's location
     public Point2D.Double _enemyLocation;  // enemy bot's location
 
-    public ArrayList _enemyWaves;
-    public ArrayList _surfDirections;
-    public ArrayList _surfAbsBearings;
+    public ArrayList<EnemyWave> _enemyWaves;
+    public ArrayList<Integer> _surfDirections;
+    public ArrayList<Double> _surfAbsBearings;
 
     public static double _oppEnergy = 100.0;
 
-    /** This is a rectangle that represents an 800x600 battle field,
+    private GunControllerSelector gunControllerSelector;
+    private double firePower = 0.0;
+    private GunTurnCompleteCondition gunCondition = null;
+
+    /**
+     * This is a rectangle that represents an 800x600 battle field,
      * used for a simple, iterative WallSmoothing method (by PEZ).
      * If you're not familiar with WallSmoothing, the wall stick indicates
      * the amount of space we try to always have on either end of the tank
@@ -45,9 +48,10 @@ public class Greez extends AdvancedRobot
      * run: Greez's default behavior
      */
     public void run() {
-        _enemyWaves = new ArrayList();
-        _surfDirections = new ArrayList();
-        _surfAbsBearings = new ArrayList();
+        gunControllerSelector = new GunControllerSelector(this);
+        _enemyWaves = new ArrayList<>();
+        _surfDirections = new ArrayList<>();
+        _surfAbsBearings = new ArrayList<>();
 
         setAdjustGunForRobotTurn(true);
         setAdjustRadarForGunTurn(true);
@@ -57,13 +61,43 @@ public class Greez extends AdvancedRobot
         } while (true);
     }
 
+    public void turnAndFire(TargetingData data) {
+        if (gunCondition != null) {
+            removeCustomEvent(gunCondition);
+        }
+        out.println("debug: targeting " + data.bearing*180/Math.PI + " degrees");
+        double turn = data.bearing - getGunHeadingRadians();
+        while (turn > Math.PI) turn -= Math.PI*2;
+        while (turn < -Math.PI) turn += Math.PI*2;
+        out.println("debug: turning " + turn*180/Math.PI + " degrees right");
+        setTurnGunRightRadians(turn);
+        addCustomEvent(gunCondition = new GunTurnCompleteCondition(this));
+        firePower = data.bulletPower;
+    }
+
+    /**
+     * On gun turned event
+     *
+     * @param event event
+     */
+    public void onCustomEvent(CustomEvent event) {
+        if (event.getCondition() == gunCondition) {
+            this.removeCustomEvent(gunCondition);
+            gunCondition = null;
+            gunControllerSelector.addBullet(fireBullet(firePower));
+            out.println("debug: firing bullet, gunHeading=" + getGunHeading());
+            firePower = 0.0;
+        }
+    }
+
     /**
      * onScannedRobot: What to do when you see another robot
      */
     public void onScannedRobot(ScannedRobotEvent e) {
+
         _myLocation = new Point2D.Double(getX(), getY());
 
-        double lateralVelocity = getVelocity()*Math.sin(e.getBearingRadians());
+        double lateralVelocity = getVelocity() * Math.sin(e.getBearingRadians());
         double absBearing = e.getBearingRadians() + getHeadingRadians();
 
         setTurnRadarRightRadians(Utils.normalRelativeAngle(absBearing
@@ -81,9 +115,9 @@ public class Greez extends AdvancedRobot
             ew.fireTime = getTime() - 1;
             ew.bulletVelocity = bulletVelocity(bulletPower);
             ew.distanceTraveled = bulletVelocity(bulletPower);
-            ew.direction = (Integer) _surfDirections.get(2);
-            ew.directAngle = (Double) _surfAbsBearings.get(2);
-            ew.fireLocation = (Point2D.Double)_enemyLocation.clone(); // last tick
+            ew.direction = _surfDirections.get(2);
+            ew.directAngle = _surfAbsBearings.get(2);
+            ew.fireLocation = (Point2D.Double) _enemyLocation.clone(); // last tick
 
             _enemyWaves.add(ew);
         }
@@ -97,7 +131,11 @@ public class Greez extends AdvancedRobot
         updateWaves();
         doSurfing();
 
+        //out.println("debug: gunCondition=" + gunCondition + " gunHeat="+getGunHeat());
+
         // gun code would go here...
+        if (gunCondition == null && getGunHeat() < 0.00001)
+            gunControllerSelector.controlGun(e);
     }
 
     /**
@@ -113,7 +151,7 @@ public class Greez extends AdvancedRobot
 
             // look through the EnemyWaves, and find one that could've hit us.
             for (int x = 0; x < _enemyWaves.size(); x++) {
-                EnemyWave ew = (EnemyWave)_enemyWaves.get(x);
+                EnemyWave ew = _enemyWaves.get(x);
 
                 if (Math.abs(ew.distanceTraveled -
                         _myLocation.distance(ew.fireLocation)) < 50
@@ -146,7 +184,7 @@ public class Greez extends AdvancedRobot
         EnemyWave surfWave = null;
 
         for (int x = 0; x < _enemyWaves.size(); x++) {
-            EnemyWave ew = (EnemyWave)_enemyWaves.get(x);
+            EnemyWave ew = (EnemyWave) _enemyWaves.get(x);
             double distance = _myLocation.distance(ew.fireLocation)
                     - ew.distanceTraveled;
 
@@ -161,7 +199,7 @@ public class Greez extends AdvancedRobot
 
     public void updateWaves() {
         for (int x = 0; x < _enemyWaves.size(); x++) {
-            EnemyWave ew = (EnemyWave)_enemyWaves.get(x);
+            EnemyWave ew = (EnemyWave) _enemyWaves.get(x);
 
             ew.distanceTraveled = (getTime() - ew.fireTime) * ew.bulletVelocity;
             if (ew.distanceTraveled >
@@ -186,7 +224,7 @@ public class Greez extends AdvancedRobot
     }
 
     public Point2D.Double predictPosition(EnemyWave surfWave, int direction) {
-        Point2D.Double predictedPosition = (Point2D.Double)_myLocation.clone();
+        Point2D.Double predictedPosition = (Point2D.Double) _myLocation.clone();
         double predictedVelocity = getVelocity();
         double predictedHeading = getHeadingRadians();
         double maxTurning, moveAngle, moveDir;
@@ -197,11 +235,11 @@ public class Greez extends AdvancedRobot
         do {    // the rest of these code comments are rozu's
             moveAngle =
                     wallSmoothing(predictedPosition, absoluteBearing(surfWave.fireLocation,
-                            predictedPosition) + (direction * (Math.PI/2)), direction)
+                            predictedPosition) + (direction * (Math.PI / 2)), direction)
                             - predictedHeading;
             moveDir = 1;
 
-            if(Math.cos(moveAngle) < 0) {
+            if (Math.cos(moveAngle) < 0) {
                 moveAngle += Math.PI;
                 moveDir = -1;
             }
@@ -209,7 +247,7 @@ public class Greez extends AdvancedRobot
             moveAngle = Utils.normalRelativeAngle(moveAngle);
 
             // maxTurning is built in like this, you can't turn more then this in one tick
-            maxTurning = Math.PI/720d*(40d - 3d*Math.abs(predictedVelocity));
+            maxTurning = Math.PI / 720d * (40d - 3d * Math.abs(predictedVelocity));
             predictedHeading = Utils.normalRelativeAngle(predictedHeading
                     + limit(-maxTurning, moveAngle, maxTurning));
 
@@ -217,7 +255,7 @@ public class Greez extends AdvancedRobot
             // different signs you want to breack down
             // otherwise you want to accelerate (look at the factor "2")
             predictedVelocity +=
-                    (predictedVelocity * moveDir < 0 ? 2*moveDir : moveDir);
+                    (predictedVelocity * moveDir < 0 ? 2 * moveDir : moveDir);
             predictedVelocity = limit(-8, predictedVelocity, 8);
 
             // calculate the new predicted position
@@ -231,7 +269,7 @@ public class Greez extends AdvancedRobot
                             + surfWave.bulletVelocity) {
                 intercepted = true;
             }
-        } while(!intercepted && counter < 500);
+        } while (!intercepted && counter < 500);
 
         return predictedPosition;
     }
@@ -246,16 +284,18 @@ public class Greez extends AdvancedRobot
     public void doSurfing() {
         EnemyWave surfWave = getClosestSurfableWave();
 
-        if (surfWave == null) { return; }
+        if (surfWave == null) {
+            return;
+        }
 
         double dangerLeft = checkDanger(surfWave, -1);
         double dangerRight = checkDanger(surfWave, 1);
 
         double goAngle = absoluteBearing(surfWave.fireLocation, _myLocation);
         if (dangerLeft < dangerRight) {
-            goAngle = wallSmoothing(_myLocation, goAngle - (Math.PI/2), -1);
+            goAngle = wallSmoothing(_myLocation, goAngle - (Math.PI / 2), -1);
         } else {
-            goAngle = wallSmoothing(_myLocation, goAngle + (Math.PI/2), 1);
+            goAngle = wallSmoothing(_myLocation, goAngle + (Math.PI / 2), 1);
         }
 
         setBackAsFront(this, goAngle);
