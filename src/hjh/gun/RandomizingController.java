@@ -64,17 +64,17 @@ public class RandomizingController extends AbstractGunController {
         double power = Math.min(Helper.bulletPower(velocity), Math.pow(myRobot.getEnergy(), 0.7) / 5);
 
         if (power < 0.1) {
-            if (myRobot.getGunHeat() < 0.001)
-                myRobot.out.println("debug: RC target too far, distance = " + distance + ", bullet_time = " + bullet_time);
+            /*if (myRobot.getGunHeat() < 0.001)
+                myRobot.out.println("debug: RC target too far, distance = " + distance + ", bullet_time = " + bullet_time);*/
             return null;
         }
 
         //myRobot.out.println("debug: my    x = " + myRobot.getX() + "; y = " + myRobot.getY());
-        if (myRobot.getGunHeat() < 0.001)
+        /*if (myRobot.getGunHeat() < 0.001)
             myRobot.out.println("debug: RC Enemy location = " + provider.getEnemyLocation() + "; enemy velocity = " + provider.getEnemyVelocity());
         //myRobot.out.println("debug: Enemy abs bearing = " + absBearing*180/Math.PI + "; " + Helper.getBearing(targetVector)*180/Math.PI);
         if (myRobot.getGunHeat() < 0.001)
-            myRobot.out.println("debug: RC Target Vector = " + targetVector + "; target bearing = " + Helper.getBearing(targetVector) * 180 / Math.PI);
+            myRobot.out.println("debug: RC Target Vector = " + targetVector + "; target bearing = " + Helper.getBearing(targetVector) * 180 / Math.PI);*/
         myRobot.setBulletColor(Color.YELLOW);
         return new TargetingData(power, Helper.getBearing(targetVector));
     }

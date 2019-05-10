@@ -15,7 +15,7 @@ public class DumbGunController implements GunController {
     @Override
     public TargetingData getTargetingData(ScannedRobotEvent event, AdvancedRobot myRobot) {
         if (myRobot.getGunHeat() < 0.001 && Math.random() < chance) {
-            myRobot.out.println("debug: using dumb controller.");
+            //myRobot.out.println("debug: using dumb controller.");
             myRobot.setBulletColor(Color.ORANGE);
             return new TargetingData(Math.min(Math.log10(myRobot.getEnergy()), 250 / event.getDistance()), myRobot.getHeadingRadians() + event.getBearingRadians());
         }

@@ -3,6 +3,8 @@ package hjh;
 import hjh.gun.GunControllerSelector;
 import hjh.gun.TargetingData;
 import hjh.movement.EnemyWave;
+import hjh.util.Helper;
+import hjh.util.Vector2D;
 import robocode.*;
 import robocode.util.Utils;
 
@@ -191,6 +193,29 @@ public class Greez extends AdvancedRobot {
             }
         }
     }
+
+    /*@Override
+    public void onPaint(Graphics2D g) {
+        for (EnemyWave enemyWave : _enemyWaves) {
+            Point2D.Double waveLocation = Vector2D.add(enemyWave.fireLocation, Helper.getVector(-enemyWave.directAngle, enemyWave.distanceTraveled));
+
+            out.println("debug: direct angle = " + enemyWave.directAngle);
+            g.setColor(Color.BLUE);
+            g.drawArc((int) (enemyWave.fireLocation.getX() - enemyWave.distanceTraveled),
+                    (int) (enemyWave.fireLocation.getY() - enemyWave.distanceTraveled),
+                    (int)enemyWave.distanceTraveled*2,
+                    (int)enemyWave.distanceTraveled*2,
+                    (int)((enemyWave.directAngle)*180/Math.PI) - 8, 16);
+
+            g.setColor(Color.CYAN);
+            g.drawLine((int)enemyWave.fireLocation.getX(), (int)enemyWave.fireLocation.getY(), (int)waveLocation.getX(), (int)waveLocation.getY());
+
+
+        }
+
+        g.drawArc(300, 300, 100, 100, 0, 30);
+
+    }*/
 
     /**
      * onHitWall: What to do when you hit a wall

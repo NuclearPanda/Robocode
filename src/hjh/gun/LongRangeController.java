@@ -51,8 +51,8 @@ public class LongRangeController extends AbstractGunController {
                 t = (relVelocity + disc) / acc;
             }
             if (t < 0) {
-                if (myRobot.getGunHeat() < 0.001)
-                    myRobot.out.println("debug: LR no solution with current enemy acceleration. acc = " + acc + " bullet_time = " + t);
+                //if (myRobot.getGunHeat() < 0.001)
+                //   myRobot.out.println("debug: LR no solution with current enemy acceleration. acc = " + acc + " bullet_time = " + t);
                 bullet_time = distance / relVelocity;
                 enemyEstimated = Vector2D.add(provider.getEnemyLocation(),
                         new Vector2D(provider.getEnemyVelocity()).multiply(bullet_time));
@@ -68,8 +68,8 @@ public class LongRangeController extends AbstractGunController {
         Vector2D targetVector = new Vector2D(enemyEstimated);
 
         //myRobot.out.println("debug: my    x = " + myRobot.getX() + "; y = " + myRobot.getY());
-        if (myRobot.getGunHeat() < 0.001)
-            myRobot.out.println("debug: LR b_power = " + b_power + " enemy velocity = " + event.getVelocity());
+        //if (myRobot.getGunHeat() < 0.001)
+        //    myRobot.out.println("debug: LR b_power = " + b_power + " enemy velocity = " + event.getVelocity());
         //myRobot.out.println("debug: Enemy abs bearing = " + absBearing*180/Math.PI + "; " + Helper.getBearing(targetVector)*180/Math.PI);
         //myRobot.out.println("debug: LR Target Vector = " + targetVector + "; enemy velocity = " + provider.getEnemyVelocity());
         myRobot.setBulletColor(Color.CYAN);

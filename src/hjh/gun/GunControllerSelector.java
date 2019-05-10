@@ -66,7 +66,7 @@ public class GunControllerSelector implements EnemyDataProvider {
         if (oldTime >= myRobot.getTime())
             oldTime = myRobot.getTime() - 1;
         double a = (event.getVelocity() - oldEnemyVelocityDouble) / (myRobot.getTime() - oldTime);
-        if (myRobot.getGunHeat() < 0.001) myRobot.out.println("debug: CG enemy acc = " + a);
+        //if (myRobot.getGunHeat() < 0.001) myRobot.out.println("debug: CG enemy acc = " + a);
         double realEnemyVelocity = a > -0.5 ? (a > 0.5 ? Math.min(8, event.getVelocity() + 6) : event.getVelocity()) : Math.max(-8, event.getVelocity() - 6);
         enemyVelocity = Helper.getVector(Helper.convertBearing(event.getHeadingRadians()), realEnemyVelocity);
         //enemyVelocity = new Vector2D(realEnemyVelocity, 0).rotateRadians(Helper.convertBearing(event.getHeadingRadians()));
