@@ -18,7 +18,7 @@ public class Helper {
                 / maxEscapeAngle(ew.bulletVelocity) * ew.direction;
 
         return (int) limit(0,
-                (factor * ((BINS - 1) / 2)) + ((BINS - 1) / 2),
+                (factor * ((BINS - 1) / 2.0)) + ((BINS - 1) / 2.0),
                 BINS - 1);
     }
 

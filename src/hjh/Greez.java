@@ -194,35 +194,49 @@ public class Greez extends AdvancedRobot {
         }
     }
 
-    /*@Override
+    @Override
     public void onPaint(Graphics2D g) {
         for (EnemyWave enemyWave : _enemyWaves) {
-            Point2D.Double waveLocation = Vector2D.add(enemyWave.fireLocation, Helper.getVector(-enemyWave.directAngle, enemyWave.distanceTraveled));
+            Point2D.Double waveLocation = Vector2D.add(enemyWave.fireLocation, Helper.getVector(Math.PI / 2 - enemyWave.directAngle, enemyWave.distanceTraveled));
 
             out.println("debug: direct angle = " + enemyWave.directAngle);
             g.setColor(Color.BLUE);
             g.drawArc((int) (enemyWave.fireLocation.getX() - enemyWave.distanceTraveled),
                     (int) (enemyWave.fireLocation.getY() - enemyWave.distanceTraveled),
-                    (int)enemyWave.distanceTraveled*2,
-                    (int)enemyWave.distanceTraveled*2,
-                    (int)((enemyWave.directAngle)*180/Math.PI) - 8, 16);
+                    (int) enemyWave.distanceTraveled * 2,
+                    (int) enemyWave.distanceTraveled * 2,
+                    0, 360);
 
             g.setColor(Color.CYAN);
-            g.drawLine((int)enemyWave.fireLocation.getX(), (int)enemyWave.fireLocation.getY(), (int)waveLocation.getX(), (int)waveLocation.getY());
+            g.drawArc((int) (enemyWave.fireLocation.getX() - enemyWave.distanceTraveled),
+                    (int) (enemyWave.fireLocation.getY() - enemyWave.distanceTraveled),
+                    (int) enemyWave.distanceTraveled * 2,
+                    (int) enemyWave.distanceTraveled * 2,
+                    (int) (enemyWave.directAngle * 180 / Math.PI), -15*enemyWave.direction);
 
+            g.setColor(Color.BLUE);
+            g.drawLine((int) enemyWave.fireLocation.getX(), (int) enemyWave.fireLocation.getY(), (int) waveLocation.getX(), (int) waveLocation.getY());
+
+            g.setColor(Color.RED);
+            g.drawArc((int) (enemyWave.fireLocation.getX() - enemyWave.distanceTraveled),
+                    (int) (enemyWave.fireLocation.getY() - enemyWave.distanceTraveled),
+                    (int) enemyWave.distanceTraveled * 2,
+                    (int) enemyWave.distanceTraveled * 2,
+                    (int) (enemyWave.directAngle * 180 / Math.PI), enemyWave.direction*15);
 
         }
 
-        g.drawArc(300, 300, 100, 100, 0, 30);
+        //g.setColor(Color.CYAN);
+        //g.drawArc(300, 300, 100, 100, 0, 30);
 
-    }*/
+    }
 
     /**
      * onHitWall: What to do when you hit a wall
      */
     public void onHitWall(HitWallEvent e) {
         // Replace the next line with any behavior you would like
-        back(20);
+        back(20*Math.signum(Math.cos(e.getBearingRadians())));
     }
 
     public EnemyWave getClosestSurfableWave() {
