@@ -22,6 +22,11 @@ public class Vector2D {
         this.y = p.getY();
     }
 
+    public Vector2D(Vector2D other) {
+        this.x = other.getX();
+        this.y = other.getY();
+    }
+
     public double getX() {
         return x;
     }
@@ -56,12 +61,32 @@ public class Vector2D {
         return new Point2D.Double(origin.getX() + vector.getX(), origin.getY() + vector.getY());
     }
 
+    public static Vector2D add(Vector2D a, Vector2D b) {
+        return new Vector2D(a.x + b.x, a.y + b.y);
+    }
+
+    public static Vector2D substract(Vector2D a, Vector2D b) {
+        return new Vector2D(a.x - b.x, a.y - b.y);
+    }
+
     public Vector2D rotateRadians(double angle) {
-        angle -= Math.atan2(y, x);
+        angle -= getAngle();
         double length = getLength();
         x = Math.cos(angle) * length;
         y = Math.sin(angle) * length;
         return this;
+    }
+
+    public double getAngle() {
+        return Math.atan2(y, x);
+    }
+
+    public Vector2D projectedTo(Vector2D direction) {
+        return Helper.getVector(direction.getAngle(), getProjectedLength(direction));
+    }
+
+    public double getProjectedLength(Vector2D direction) {
+        return getLength() * Math.cos(direction.getAngle() - getAngle());
     }
 
     public Point2D.Double toPoint() {

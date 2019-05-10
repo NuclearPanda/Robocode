@@ -6,6 +6,7 @@ import hjh.movement.EnemyWave;
 import robocode.*;
 import robocode.util.Utils;
 
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class Greez extends AdvancedRobot {
      * the amount of space we try to always have on either end of the tank
      * (extending straight out the front or back) before touching a wall.
      */
-    public static Rectangle2D.Double _fieldRect
+    public static final Rectangle2D.Double _fieldRect
             = new java.awt.geom.Rectangle2D.Double(18, 18, 764, 564);
     public static double WALL_STICK = 160;
 
@@ -48,6 +49,11 @@ public class Greez extends AdvancedRobot {
      * run: Greez's default behavior
      */
     public void run() {
+
+        setBodyColor(Color.getHSBColor(0.19444f, 0.50f, 0.54f));
+        setRadarColor(Color.BLACK);
+        setScanColor(Color.getHSBColor(0.19444f, 0.48f, 0.29f));
+
         gunControllerSelector = new GunControllerSelector(this);
         _enemyWaves = new ArrayList<>();
         _surfDirections = new ArrayList<>();
@@ -62,16 +68,21 @@ public class Greez extends AdvancedRobot {
     }
 
     public void turnAndFire(TargetingData data) {
+        if (data == null) {
+            return;
+        }
+
         if (gunCondition != null) {
             removeCustomEvent(gunCondition);
         }
-        out.println("debug: targeting " + data.bearing*180/Math.PI + " degrees");
+        //out.println("debug: targeting " + data.bearing*180/Math.PI + " degrees");
         double turn = data.bearing - getGunHeadingRadians();
-        while (turn > Math.PI) turn -= Math.PI*2;
-        while (turn < -Math.PI) turn += Math.PI*2;
-        out.println("debug: turning " + turn*180/Math.PI + " degrees right");
+        while (turn > Math.PI) turn -= Math.PI * 2;
+        while (turn < -Math.PI) turn += Math.PI * 2;
+        //out.println("debug: turning " + turn*180/Math.PI + " degrees right");
         setTurnGunRightRadians(turn);
-        addCustomEvent(gunCondition = new GunTurnCompleteCondition(this));
+        if (getGunHeat() < 0.00001)
+            addCustomEvent(gunCondition = new GunTurnCompleteCondition(this));
         firePower = data.bulletPower;
     }
 
@@ -85,9 +96,19 @@ public class Greez extends AdvancedRobot {
             this.removeCustomEvent(gunCondition);
             gunCondition = null;
             gunControllerSelector.addBullet(fireBullet(firePower));
-            out.println("debug: firing bullet, gunHeading=" + getGunHeading());
+            //out.println("debug: firing bullet, gunHeading=" + getGunHeading());
             firePower = 0.0;
         }
+    }
+
+    @Override
+    public void onBulletHit(BulletHitEvent event) {
+        gunControllerSelector.onHitTarget(event);
+    }
+
+    @Override
+    public void onBulletMissed(BulletMissedEvent event) {
+        gunControllerSelector.onMissed(event);
     }
 
     /**
@@ -134,7 +155,7 @@ public class Greez extends AdvancedRobot {
         //out.println("debug: gunCondition=" + gunCondition + " gunHeat="+getGunHeat());
 
         // gun code would go here...
-        if (gunCondition == null && getGunHeat() < 0.00001)
+        if (gunCondition == null/* && getGunHeat() < 0.00001*/)
             gunControllerSelector.controlGun(e);
     }
 
